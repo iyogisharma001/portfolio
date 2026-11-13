@@ -1,0 +1,23 @@
+# Local PostgreSQL for development. Start with `npm run db:up`.
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: portfolio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+      POSTGRES_DB: portfolio
+    ports:
+      # Host port 5433 avoids clashing with a PostgreSQL already on 5432.
+      - "5433:5432"
+    volumes:
+      - portfolio-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  portfolio-db:

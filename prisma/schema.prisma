@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// The portfolio owner. A single row; projects and skills hang off it.
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  headline     String
+  bio          String
+  location     String?
+  githubUrl    String?
+  linkedinUrl  String?
+  resumeUrl    String?
+  available    Boolean   @default(true)
+  availability String?
+  projects     Project[]
+  skills       Skill[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  slug         String        @unique
+  title        String
+  tagline      String
+  description  String
+  category     String
+  role         String        @default("Developer")
+  techStack    String[]
+  highlights   String[]
+  /// Array of { label, value } pairs shown as impact metrics.
+  metrics      Json          @default("[]")
+  githubUrl    String?
+  liveUrl      String?
+  featured     Boolean       @default(false)
+  order        Int           @default(0)
+  userId       String?
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  endorsements Endorsement[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([category])
+  @@index([order])
+}
+
+model Skill {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  category String
+  order    Int     @default(0)
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([category, order])
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  ARCHIVED
+}
+
+model Message {
+  id        String        @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  body      String
+  status    MessageStatus @default(UNREAD)
+  /// Whether the notification email was delivered.
+  notified  Boolean       @default(false)
+  /// Salted hash of the sender's IP, used only for rate limiting.
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime      @default(now())
+
+  @@index([createdAt])
+  @@index([ipHash, createdAt])
+}
+
+/// One row per visitor per project, so a visitor can endorse a project once.
+model Endorsement {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  @@unique([projectId, visitorHash])
+}
+
+/// Privacy-friendly analytics: no cookies, no raw IPs, hash rotates daily.
+model PageView {
+  id          String   @id @default(cuid())
+  path        String
+  referrer    String?
+  visitorHash String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path])
+}
