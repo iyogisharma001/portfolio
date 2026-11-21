@@ -5,10 +5,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { getEndorsements, toggleEndorsement } from "@/actions/endorsements";
 import { EndorseButton } from "@/components/projects/endorse-button";
-import { ProjectCard } from "@/components/projects/project-card";
+import { FeaturedProject, ProjectCard } from "@/components/projects/project-card";
 import { ProjectModal } from "@/components/projects/project-modal";
 import { Portal } from "@/components/ui/portal";
 import type { Project } from "@/lib/data";
+import type { RepoStats } from "@/lib/github";
 import { cn } from "@/lib/utils";
 
 const ALL = "All";
@@ -28,7 +29,7 @@ function useEndorsements() {
         setEndorsed(new Set(state.endorsed));
       })
       .catch(() => {
-        // Counts are a nice-to-have; the grid works without them.
+        // Counts are a nice-to-have; the list works without them.
       });
     return () => {
       cancelled = true;
@@ -73,7 +74,12 @@ function useEndorsements() {
   return { counts, endorsed, pending, toggle };
 }
 
-export function Projects({ projects }: { projects: Project[] }) {
+type ProjectsProps = {
+  projects: Project[];
+  repoStats: Record<string, RepoStats>;
+};
+
+export function Projects({ projects, repoStats }: ProjectsProps) {
   const [filter, setFilter] = useState<string>(ALL);
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const { counts, endorsed, pending, toggle } = useEndorsements();
@@ -83,12 +89,14 @@ export function Projects({ projects }: { projects: Project[] }) {
     [projects],
   );
   const visible = filter === ALL ? projects : projects.filter((p) => p.category === filter);
+  const featured = visible.filter((project) => project.featured && project.image);
+  const others = visible.filter((project) => !featured.includes(project));
   const openProject = projects.find((project) => project.slug === openSlug) ?? null;
   const closeModal = useCallback(() => setOpenSlug(null), []);
+  const statsFor = (project: Project) => (project.repo ? repoStats[project.repo] : undefined);
 
   const endorseButton = (slug: string) => (
     <EndorseButton
-      className="relative z-10"
       count={counts[slug] ?? 0}
       endorsed={endorsed.has(slug)}
       pending={pending === slug}
@@ -98,13 +106,11 @@ export function Projects({ projects }: { projects: Project[] }) {
 
   return (
     <>
-      <div
-        role="group"
-        aria-label="Filter projects by category"
-        className="glass mb-8 inline-flex max-w-full gap-1 overflow-x-auto rounded-full p-1"
-      >
+      <div role="group" aria-label="Filter projects by category" className="mb-12 flex flex-wrap gap-2">
         {categories.map((category) => {
           const selected = filter === category;
+          const count =
+            category === ALL ? projects.length : projects.filter((p) => p.category === category).length;
           return (
             <button
               key={category}
@@ -112,53 +118,74 @@ export function Projects({ projects }: { projects: Project[] }) {
               aria-pressed={selected}
               onClick={() => setFilter(category)}
               className={cn(
-                "relative rounded-full px-4 py-2 text-sm whitespace-nowrap transition-colors",
-                selected ? "text-zinc-950" : "text-zinc-400 hover:text-white",
+                "rounded-lg border px-3 py-1.5 text-sm transition-colors",
+                selected
+                  ? "border-zinc-200 bg-zinc-100 text-zinc-950"
+                  : "border-white/10 text-zinc-400 hover:border-white/20 hover:text-zinc-100",
               )}
             >
-              {selected ? (
-                <motion.span
-                  layoutId="project-filter"
-                  className="absolute inset-0 rounded-full bg-white"
-                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                />
-              ) : null}
-              <span className="relative">{category}</span>
+              {category} <span className={selected ? "text-zinc-500" : "text-zinc-600"}>{count}</span>
             </button>
           );
         })}
       </div>
 
-      <ul className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-        <AnimatePresence mode="popLayout" initial={false}>
-          {visible.map((project) => (
-            <motion.li
-              key={project.slug}
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.25 }}
-            >
-              <ProjectCard
-                project={project}
-                onOpen={() => setOpenSlug(project.slug)}
-                endorse={endorseButton(project.slug)}
-              />
-            </motion.li>
-          ))}
-        </AnimatePresence>
-      </ul>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={filter}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2 }}
+        >
+          {featured.length > 0 ? (
+            <ul className="space-y-20 sm:space-y-24">
+              {featured.map((project, i) => (
+                <li key={project.slug}>
+                  <FeaturedProject
+                    project={project}
+                    stats={statsFor(project)}
+                    flip={i % 2 === 1}
+                    onOpen={() => setOpenSlug(project.slug)}
+                    endorse={endorseButton(project.slug)}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          {others.length > 0 ? (
+            <div className={featured.length > 0 ? "mt-24" : undefined}>
+              {featured.length > 0 ? (
+                <h3 className="mb-6 text-sm font-medium text-zinc-300">More projects</h3>
+              ) : null}
+              <ul className="grid gap-5 md:grid-cols-2">
+                {others.map((project) => (
+                  <li key={project.slug}>
+                    <ProjectCard
+                      project={project}
+                      stats={statsFor(project)}
+                      onOpen={() => setOpenSlug(project.slug)}
+                      endorse={endorseButton(project.slug)}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </motion.div>
+      </AnimatePresence>
 
       <Portal>
         <AnimatePresence>
           {openProject ? (
-          <ProjectModal
-            key={openProject.slug}
-            project={openProject}
-            onClose={closeModal}
-            endorse={endorseButton(openProject.slug)}
-          />
+            <ProjectModal
+              key={openProject.slug}
+              project={openProject}
+              stats={statsFor(openProject)}
+              onClose={closeModal}
+              endorse={endorseButton(openProject.slug)}
+            />
           ) : null}
         </AnimatePresence>
       </Portal>

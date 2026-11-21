@@ -1,14 +1,19 @@
 /**
  * Single source of truth for portfolio content.
  *
+ * Project write-ups are taken from each repository's README on GitHub
+ * (github.com/iyogisharma001). Live repository details (language, last push,
+ * stars) are merged in at runtime by `lib/github.ts`.
+ *
  * - `prisma/seed.ts` writes projects, skills and the profile into PostgreSQL.
  * - `lib/queries.ts` reads them back, and falls back to these values when the
  *   database is unreachable, so the site always renders.
  */
 
 export type Metric = { label: string; value: string };
+export type Link = { label: string; href: string };
 
-export type ProjectCategory = "Backend" | "Machine Learning" | "Full-Stack";
+export type ProjectCategory = "Full-Stack" | "Backend" | "AI" | "Data" | "ML";
 
 export type Project = {
   slug: string;
@@ -22,15 +27,25 @@ export type Project = {
   metrics: Metric[];
   githubUrl: string | null;
   liveUrl: string | null;
+  /** Repository name under the GitHub account, for live stats. */
+  repo: string | null;
+  /** Cover screenshot under /public. */
+  image: string | null;
+  /** Extra screenshots for the detail view. */
+  gallery: string[];
+  /** Additional links such as a second repository. */
+  links: Link[];
   featured: boolean;
   order: number;
 };
 
 export type SkillCategory =
   | "Languages"
-  | "Backend & Web"
-  | "Databases & Tools"
-  | "Core Fundamentals";
+  | "Frontend"
+  | "Backend"
+  | "Data & Infrastructure"
+  | "AI & ML"
+  | "Fundamentals";
 
 export type Skill = { name: string; category: SkillCategory; order: number };
 
@@ -44,65 +59,59 @@ export type TimelineEntry = {
   tags?: string[];
 };
 
+const GITHUB = "https://github.com/iyogisharma001";
+
 export const profile = {
   name: "Yogesh Sharma",
   firstName: "Yogesh",
   initials: "YS",
   headline: "Software Engineer",
-  roles: [
-    "backend systems.",
-    "REST APIs in TypeScript.",
-    "ML models from first principles.",
-    "clean, tested code.",
-  ],
-  tagline:
-    "Pre-final year undergraduate at BIT Mesra who likes understanding systems all the way down — from payment webhooks and aggregation pipelines to writing an autograd engine and a GPT by hand.",
+  intro:
+    "I'm a pre-final year ECE student at BIT Mesra who builds backend-heavy products end to end: a live e-commerce store with Stripe payments, a voice-driven AI interview platform with a Docker code sandbox, and a ticket booking engine designed for flash-sale traffic.",
   bio: [
-    "I'm a pre-final year Electronics and Communication Engineering undergraduate at BIT Mesra (class of 2028) with strong fundamentals in data structures, algorithms and object-oriented design.",
-    "Most of my hands-on work is on the backend: building REST APIs with Node.js and TypeScript, integrating Stripe payments, and designing MongoDB aggregation pipelines. On the side I rebuild ML systems from first principles in Python to understand what the frameworks hide.",
-    "I've solved 500+ problems across LeetCode and GeeksforGeeks, and I enjoy the same thing in engineering that I enjoy there: breaking a hard problem into pieces that are each obviously correct.",
+    "I study Electronics and Communication Engineering at BIT Mesra (class of 2028). Most of what I build sits on the server side: payment flows that can't double-charge, seat holds that survive a flash sale, and sandboxes that run untrusted code safely.",
+    "I like projects that force me to think about failure: what happens when a webhook arrives twice, when Redis goes down, or when an LLM call times out halfway through a sentence. My READMEs say what works, what doesn't yet, and why.",
+    "Outside of code I compete in athletics and strength sports. Training for a 400m and grinding DSA problems turn out to need the same habit: show up every day and measure honestly.",
   ],
   location: "Ranchi, India",
+  timezone: "Asia/Kolkata",
   email: "i.yogisharma5@gmail.com",
-  githubUrl: "https://github.com/iyogisharma001",
+  githubUrl: GITHUB,
   githubHandle: "iyogisharma001",
   linkedinUrl: "https://www.linkedin.com/in/yogesh-sharma-597466325/",
+  leetcodeUrl: "https://leetcode.com/u/CodeZenith01/",
+  leetcodeHandle: "CodeZenith01",
   resumeUrl: "/Yogesh_Resume.pdf",
+  /** Optional portrait under /public. Leave null to show initials. */
+  photo: null as string | null,
   available: true,
-  availability: "Available for Software Engineering Internships / Full-Time Roles",
-} as const;
-
-export const stats: Metric[] = [
-  { value: "500+", label: "DSA problems solved" },
-  { value: "98.11", label: "JEE Main percentile" },
-  { value: "25+", label: "API routes shipped" },
-  { value: "30+", label: "Students taught" },
-];
+  availability: "Open to SDE internships and full-time roles",
+};
 
 export const skillCategories: SkillCategory[] = [
   "Languages",
-  "Backend & Web",
-  "Databases & Tools",
-  "Core Fundamentals",
+  "Frontend",
+  "Backend",
+  "Data & Infrastructure",
+  "AI & ML",
+  "Fundamentals",
 ];
 
 const skillMap: Record<SkillCategory, string[]> = {
-  Languages: ["C++", "Python", "JavaScript", "TypeScript", "C", "SQL", "HTML5", "CSS3"],
-  "Backend & Web": [
-    "Node.js",
-    "Express.js",
-    "Next.js",
-    "REST APIs",
-    "Webhooks",
-    "In-memory Caching",
+  Languages: ["C++", "Python", "TypeScript", "JavaScript", "C", "SQL"],
+  Frontend: ["React", "Next.js", "Redux Toolkit", "Tailwind CSS", "SCSS"],
+  Backend: ["Node.js", "Express", "FastAPI", "Socket.io", "BullMQ", "REST & Webhooks"],
+  "Data & Infrastructure": [
+    "PostgreSQL",
+    "MongoDB",
+    "MySQL",
+    "Redis",
+    "RabbitMQ",
+    "Docker",
+    "GitHub Actions",
   ],
-  "Databases & Tools": ["MongoDB", "Firebase", "Stripe API", "Git", "GitHub Actions"],
-  "Core Fundamentals": [
-    "Data Structures & Algorithms",
-    "Object-Oriented Programming",
-    "Database Management Systems",
-    "Operating Systems",
-  ],
+  "AI & ML": ["PyTorch", "NumPy", "LangGraph", "Tree-sitter", "LLM APIs"],
+  Fundamentals: ["Data Structures & Algorithms", "OOP", "DBMS", "Operating Systems"],
 };
 
 export const skills: Skill[] = skillCategories.flatMap((category) =>
@@ -111,80 +120,177 @@ export const skills: Skill[] = skillCategories.flatMap((category) =>
 
 export const projects: Project[] = [
   {
-    slug: "ecommerce-backend-api",
-    title: "E-Commerce Backend REST API",
-    tagline: "A modular commerce backend with Stripe payments and role-based access.",
+    slug: "shopsphere",
+    title: "ShopSphere",
+    tagline: "A full-stack e-commerce store with Stripe payments, Google sign-in and an admin analytics dashboard.",
     description:
-      "A RESTful backend covering the full commerce flow — inventory, cart lifecycle and transactions — built with Node.js, TypeScript and Express. Payments run through Stripe Payment Intents with webhook-driven status verification, and reporting is served by MongoDB aggregation pipelines.",
-    category: "Backend",
-    role: "Developer",
-    techStack: ["Node.js", "Express.js", "TypeScript", "MongoDB", "Stripe", "Firebase"],
+      "An online store for gadgets and accessories, split into a React + TypeScript storefront on Vercel and an Express API on Render. Customers browse and filter products, pay with Stripe Elements and track orders; admins get sales analytics and product, order, customer and coupon management. The backend is built so the client can never set a price or create an order without a verified payment.",
+    category: "Full-Stack",
+    role: "Solo developer",
+    techStack: ["React", "TypeScript", "Redux Toolkit", "Node.js", "Express", "MongoDB", "Redis", "Stripe", "Firebase Auth", "Docker"],
     highlights: [
-      "Built and deployed a RESTful backend with 25+ modular routes for inventory, cart lifecycle and transaction handling.",
-      "Integrated Stripe Payment Intents with webhook listeners for asynchronous payment-status verification.",
-      "Secured endpoints using Firebase Admin role-based access control (RBAC) and CORS.",
-      "Wrote multi-stage MongoDB aggregation pipelines ($facet, $group, $match) for sales reporting and inventory reconciliation.",
-      "Added an in-memory caching layer (NodeCache) for frequently read catalog endpoints to cut repeated database reads.",
+      "The server sets every price: the client sends only product IDs and quantities, and totals, tax, shipping and coupons are computed in one tested function.",
+      "Exactly one order per payment: orders come from the client and from a signed Stripe webhook, made race-safe with a unique index on the PaymentIntent.",
+      "Atomic stock decrements with a stock >= quantity guard, so two buyers can't both take the last unit.",
+      "Redis read-through cache with targeted invalidation on every write.",
+      "Helmet headers, per-IP rate limits, ReDoS-safe search and Vitest unit tests, all checked in GitHub Actions CI.",
     ],
     metrics: [
-      { value: "25+", label: "Modular routes" },
-      { value: "Stripe", label: "Webhook-verified payments" },
-      { value: "RBAC", label: "Firebase Admin auth" },
+      { value: "Live", label: "Vercel + Render" },
+      { value: "7", label: "Merged pull requests" },
+      { value: "CI", label: "Type-check, test, Docker build" },
     ],
-    githubUrl: "https://github.com/iyogisharma001",
-    liveUrl: null,
+    githubUrl: `${GITHUB}/mern-ecommerce-frontend`,
+    liveUrl: "https://mern-ecommerce-frontend-eight-psi.vercel.app",
+    repo: "mern-ecommerce-frontend",
+    image: "/projects/shopsphere.webp",
+    gallery: ["/projects/shopsphere-shop.webp", "/projects/shopsphere-product.webp"],
+    links: [{ label: "Backend API", href: `${GITHUB}/mern-ecommerce-backend` }],
     featured: true,
     order: 0,
   },
   {
-    slug: "gpt-from-scratch",
-    title: "Autograd Engine, BPE Tokenizer & GPT from Scratch",
-    tagline: "A language model rebuilt from the chain rule up.",
+    slug: "whiteboard",
+    title: "Whiteboard",
+    tagline: "A voice-driven AI mock interview platform that watches your code and runs it in a sandbox.",
     description:
-      "A ground-up implementation of the modern language-model stack: a scalar reverse-mode automatic differentiation engine, hand-written backward passes, a Byte-Pair Encoding tokenizer and a decoder-only Transformer for autoregressive text generation.",
-    category: "Machine Learning",
-    role: "Developer",
-    techStack: ["Python", "PyTorch", "NumPy", "Matplotlib", "Jupyter"],
+      "A live technical interview: the candidate solves a problem in a Monaco editor while an AI interviewer listens, watches the code as it is typed, interrupts when the approach is asymptotically too slow, runs the code in a locked-down Docker container and writes a feedback report in the background.",
+    category: "AI",
+    role: "Solo developer",
+    techStack: ["React", "Monaco", "Socket.io", "Node.js", "Express", "MongoDB", "Redis", "BullMQ", "Docker", "Gemini"],
     highlights: [
-      "Implemented a scalar reverse-mode automatic differentiation engine from first principles using a dynamic computation graph (DAG) and topological sorting.",
-      "Wrote manual backward passes for Multi-Layer Perceptrons and Batch Normalization without relying on PyTorch autograd.",
-      "Built a decoder-only Transformer with multi-head self-attention for autoregressive text generation.",
-      "Wrote a custom Byte-Pair Encoding (BPE) tokenizer to feed the model.",
+      "Static complexity analysis is a cheap gate before any LLM call: the model is only asked for a verdict when the code looks slower than the problem's target.",
+      "Streaming speech: the interviewer starts talking as soon as the first sentence is generated, and stops mid-sentence if the candidate barges in.",
+      "Every run gets a fresh container: 128 MB, half a CPU, no network, read-only filesystem, 5 second hard kill.",
+      "1,137 problems across 26 topics, with hidden test suites computed from reference solutions so tests can't drift from the answer key.",
+      "Falls back to a rule-based interviewer when the model is rate-limited, so a session never goes silent.",
     ],
     metrics: [
-      { value: "Autograd", label: "Reverse-mode, DAG-based" },
-      { value: "BPE", label: "Custom tokenizer" },
-      { value: "GPT", label: "Decoder-only Transformer" },
+      { value: "1,137", label: "Interview problems" },
+      { value: "3", label: "Languages: Python, JS, C++" },
+      { value: "5 s", label: "Sandbox kill limit" },
     ],
-    githubUrl: "https://github.com/iyogisharma001",
-    liveUrl: null,
+    githubUrl: `${GITHUB}/ai-mock-interview-platform`,
+    liveUrl: "https://ai-mock-interview-platform-neon.vercel.app",
+    repo: "ai-mock-interview-platform",
+    image: "/projects/whiteboard.webp",
+    gallery: [],
+    links: [],
     featured: true,
     order: 1,
   },
   {
-    slug: "developer-portfolio",
-    title: "Developer Portfolio",
-    tagline: "The site you're looking at — full-stack, typed end to end.",
+    slug: "swe-sentinel",
+    title: "SWE-Sentinel",
+    tagline: "A pull-request assistant that writes tests for a change and proves them against base and head.",
     description:
-      "This portfolio is a full-stack Next.js application. Content is served from PostgreSQL through Prisma, the contact form runs on a validated Server Action, and privacy-friendly analytics and project endorsements are stored without cookies or raw IP addresses.",
-    category: "Full-Stack",
-    role: "Developer",
-    techStack: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Prisma", "PostgreSQL"],
+      "A Python service and CLI that reviews pull requests. It builds context from changed code with Tree-sitter, asks a language model to propose focused tests, and runs them in a network-disabled Docker sandbox against both revisions. A generated test only counts as evidence if it fails on base and passes on head.",
+    category: "AI",
+    role: "Solo developer",
+    techStack: ["Python", "FastAPI", "LangGraph", "Tree-sitter", "Docker", "Ollama", "GitHub Webhooks"],
     highlights: [
-      "App Router with Server Actions for the contact form, analytics and endorsements.",
-      "Shared Zod schema validates the contact form on the client (React Hook Form) and again on the server.",
-      "Messages are persisted to PostgreSQL with per-visitor rate limiting and a honeypot spam trap.",
-      "Content falls back to typed static data when the database is unreachable, so the page never breaks.",
+      "Generated tests run on both the PR head and base; only a fail-on-base, pass-on-head result is reported as regression evidence.",
+      "LangGraph analyst and test-synthesis loop with bounded repair attempts.",
+      "Webhooks are verified with HMAC-SHA256 and constant-time comparison; GitHub writes are off by default.",
+      "Reports evidence rather than verdicts: any proposed patch stays behind an explicit human review step, and there is no merge operation.",
+      "45 passing tests, linted with Ruff.",
     ],
     metrics: [
-      { value: "Zod", label: "Client + server validation" },
-      { value: "Prisma", label: "PostgreSQL data layer" },
-      { value: "0", label: "Cookies or trackers" },
+      { value: "45", label: "Passing tests" },
+      { value: "Off", label: "Sandbox network" },
+      { value: "0", label: "Writes by default" },
     ],
-    githubUrl: "https://github.com/iyogisharma001",
+    githubUrl: `${GITHUB}/SWE-Sentinel`,
     liveUrl: null,
-    featured: false,
+    repo: "SWE-Sentinel",
+    image: "/projects/swe-sentinel.webp",
+    gallery: [],
+    links: [{ label: "Demo PR", href: `${GITHUB}/sentinel-demo/pull/1` }],
+    featured: true,
     order: 2,
+  },
+  {
+    slug: "seatline",
+    title: "Seatline",
+    tagline: "A high-concurrency ticket booking engine with seat holds, a flash-sale waiting room and idempotent payments.",
+    description:
+      "A runnable booking backend that models the hard parts of ticketing: short-lived seat holds, a FIFO waiting room for flash sales, idempotent payments with compensation, and booking events delivered through a transactional outbox. It ships with a web front end and runs with one docker compose command.",
+    category: "Backend",
+    role: "Solo developer",
+    techStack: ["Node.js", "TypeScript", "Express", "PostgreSQL", "Redis", "RabbitMQ", "Docker", "Stripe"],
+    highlights: [
+      "Redis Lua scripts acquire every requested seat atomically, with TTLs that clear abandoned holds.",
+      "PostgreSQL stays authoritative: row locks plus version-checked updates, and a database-only fallback if Redis is down.",
+      "Payments are keyed by an Idempotency-Key; a failed or late payment releases seats or triggers a refund.",
+      "Booking changes and events commit together to an outbox, published to durable RabbitMQ queues.",
+      "FIFO waiting room on a Redis sorted set, plus per-user and per-IP rate limits.",
+    ],
+    metrics: [
+      { value: "16", label: "API endpoints" },
+      { value: "5 min", label: "Seat hold TTL" },
+      { value: "1 cmd", label: "docker compose up" },
+    ],
+    githubUrl: `${GITHUB}/ticket-booking-engine`,
+    liveUrl: null,
+    repo: "ticket-booking-engine",
+    image: "/projects/seatline.webp",
+    gallery: [],
+    links: [],
+    featured: true,
+    order: 3,
+  },
+  {
+    slug: "bank-churn-analysis",
+    title: "Bank Customer Churn Analysis",
+    tagline: "Which customers a bank is losing, where the money goes, and what retention is worth.",
+    description:
+      "A SQL and Excel analysis of 10,000 customers of a European bank that was losing 20.4% of its customers and 24.3% of all balances. It finds the segments driving churn and turns them into a retention priority list.",
+    category: "Data",
+    role: "Analyst",
+    techStack: ["MySQL", "SQL", "Excel", "Power Query"],
+    highlights: [
+      "Germany churns at 32.4% against 16–17% elsewhere, and accounts for 53% of the balance lost.",
+      "Customers aged 40–59 are 35% of the base but 63.5% of churners.",
+      "11 queries using CTEs, conditional aggregation and window functions (RANK, NTILE, LAG, running totals).",
+      "Excel dashboard reconciled against SQL (31 of 31 figures match) with a 150-customer retention list.",
+    ],
+    metrics: [
+      { value: "10,000", label: "Customers analysed" },
+      { value: "20.4%", label: "Churn rate found" },
+      { value: "31/31", label: "SQL ↔ Excel checks" },
+    ],
+    githubUrl: `${GITHUB}/bank-customer-churn-analysis`,
+    liveUrl: null,
+    repo: "bank-customer-churn-analysis",
+    image: "/projects/churn-dashboard.webp",
+    gallery: [],
+    links: [],
+    featured: false,
+    order: 4,
+  },
+  {
+    slug: "gpt-from-scratch",
+    title: "Autograd Engine & GPT from Scratch",
+    tagline: "A language model rebuilt from the chain rule up.",
+    description:
+      "A ground-up implementation of the modern language-model stack: a scalar reverse-mode automatic differentiation engine, hand-written backward passes, a Byte-Pair Encoding tokenizer and a decoder-only Transformer for autoregressive text generation.",
+    category: "ML",
+    role: "Solo developer",
+    techStack: ["Python", "PyTorch", "NumPy", "Matplotlib", "Jupyter"],
+    highlights: [
+      "Scalar reverse-mode autodiff over a dynamic computation graph with topological sorting.",
+      "Manual backward passes for MLPs and Batch Normalization, without PyTorch autograd.",
+      "Decoder-only Transformer with multi-head self-attention and a custom BPE tokenizer.",
+    ],
+    metrics: [],
+    githubUrl: null,
+    liveUrl: null,
+    repo: null,
+    image: null,
+    gallery: [],
+    links: [],
+    featured: false,
+    order: 5,
   },
 ];
 
@@ -192,7 +298,7 @@ export const experience: TimelineEntry[] = [
   {
     title: "SDE Intern",
     organization: "Agripulse",
-    period: "May 2026 – Jul 2026",
+    period: "May – Jul 2026",
     location: "Remote",
     meta: "Internship",
     points: [
@@ -200,19 +306,19 @@ export const experience: TimelineEntry[] = [
       "Fixed real-time polling by adding teardown on component unmount, eliminating duplicate HTTP/socket requests and reducing redundant server load.",
       "Built client-side route guards and session-storage state persistence for smooth login-to-dashboard transitions without server-side session overhead.",
     ],
-    tags: ["LLM APIs", "Rate limiting", "Error boundaries", "Route guards"],
+    tags: ["LLM APIs", "React", "Rate limiting"],
   },
   {
-    title: "International Coding / Maths Educator",
+    title: "Coding & Maths Educator",
     organization: "JetLearn",
-    period: "Jan 2026 – Apr 2026",
+    period: "Jan – Apr 2026",
     location: "Remote",
     meta: "Part-time",
     points: [
       "Taught Python fundamentals and algorithmic problem-solving to 30+ students across the US and Canada.",
-      "Contributed to coding and maths curriculum development while onboarding and mentoring 5+ new instructors.",
+      "Contributed to curriculum development and onboarded and mentored 5+ new instructors.",
     ],
-    tags: ["Python", "Teaching", "Mentoring", "Curriculum"],
+    tags: ["Python", "Teaching", "Mentoring"],
   },
 ];
 
@@ -242,32 +348,31 @@ export const education: TimelineEntry[] = [
   },
 ];
 
-export type Achievement = {
-  title: string;
-  detail: string;
-  /** Optional profile link, e.g. a LeetCode or GeeksforGeeks handle. */
-  links?: { label: string; href: string }[];
-};
+export type Achievement = { title: string; detail: string; href?: string };
 
 export const achievements: Achievement[] = [
   {
-    title: "500+ algorithmic problems solved",
-    detail:
-      "Across LeetCode and GeeksforGeeks, with a focus on Trees, Graphs, Heaps and Dynamic Programming.",
-    // Add your handles here to render profile links, e.g.
-    // links: [{ label: "LeetCode", href: "https://leetcode.com/u/<handle>/" }],
+    title: "500+ problems solved",
+    detail: "Across LeetCode and GeeksforGeeks, focused on trees, graphs, heaps and DP.",
+    href: profile.leetcodeUrl,
   },
   {
     title: "JEE Main — 98.11 percentile",
-    detail: "Ranked in the top 2% of candidates in India's national engineering entrance exam.",
+    detail: "India's national engineering entrance exam.",
   },
 ];
 
+export const athletics: Achievement[] = [
+  { title: "Gold — Arm Wrestling", detail: "BIT Mesra Campus Championship" },
+  { title: "Gold — 400m", detail: "BIT Mesra Annual Athletic Meet" },
+  { title: "Wrestling", detail: "State-level competitor" },
+  { title: "Kabaddi", detail: "District-level competitor" },
+];
+
 export const navLinks = [
-  { href: "#about", label: "About" },
+  { href: "#work", label: "Work" },
   { href: "#experience", label: "Experience" },
-  { href: "#projects", label: "Projects" },
-  { href: "#education", label: "Education" },
+  { href: "#about", label: "About" },
   { href: "#contact", label: "Contact" },
 ] as const;
 

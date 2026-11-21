@@ -5,18 +5,17 @@ type Variant = "primary" | "secondary" | "ghost";
 type Size = "sm" | "md";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-all duration-200 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-60";
+  "inline-flex items-center justify-center gap-2 rounded-lg font-medium whitespace-nowrap transition-colors duration-150 active:translate-y-px disabled:pointer-events-none disabled:opacity-60";
 
 const variants: Record<Variant, string> = {
-  primary:
-    "bg-white text-zinc-950 shadow-[0_0_0_1px_rgb(255_255_255/0.1),0_8px_30px_-8px_rgb(129_140_248/0.6)] hover:bg-zinc-100 hover:shadow-[0_0_0_1px_rgb(255_255_255/0.2),0_10px_36px_-6px_rgb(34_211_238/0.55)]",
-  secondary: "glass text-zinc-100 hover:border-white/20 hover:bg-zinc-800/70",
-  ghost: "text-zinc-400 hover:bg-white/5 hover:text-white",
+  primary: "bg-zinc-100 text-zinc-950 hover:bg-white",
+  secondary: "border border-white/10 bg-white/[0.03] text-zinc-100 hover:border-white/20 hover:bg-white/[0.06]",
+  ghost: "text-zinc-400 hover:bg-white/[0.05] hover:text-zinc-100",
 };
 
 const sizes: Record<Size, string> = {
-  sm: "h-9 px-4 text-sm",
-  md: "h-11 px-5 text-sm sm:text-[0.95rem]",
+  sm: "h-8 px-3 text-sm",
+  md: "h-10 px-4 text-sm",
 };
 
 type StyleProps = { variant?: Variant; size?: Size };

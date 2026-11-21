@@ -18,7 +18,7 @@ export default function OpenGraphImage() {
           justifyContent: "space-between",
           padding: 72,
           background:
-            "radial-gradient(900px 500px at 15% 0%, rgba(99,102,241,0.35), transparent 60%), radial-gradient(800px 500px at 100% 100%, rgba(34,211,238,0.25), transparent 60%), #09090b",
+            "radial-gradient(900px 500px at 15% 0%, rgba(52,211,153,0.16), transparent 60%), #09090b",
           color: "#fafafa",
           fontFamily: "sans-serif",
         }}
@@ -32,8 +32,8 @@ export default function OpenGraphImage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              background: "linear-gradient(135deg, #6366f1, #22d3ee)",
-              color: "#09090b",
+              background: "#27272a",
+              color: "#e4e4e7",
               fontSize: 28,
               fontWeight: 700,
             }}
@@ -45,13 +45,13 @@ export default function OpenGraphImage() {
 
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 92, fontWeight: 700, letterSpacing: -3 }}>{profile.name}</div>
-          <div style={{ fontSize: 40, color: "#67e8f9", marginTop: 8 }}>
-            {`${profile.headline} · Backend & ML from first principles`}
+          <div style={{ fontSize: 40, color: "#6ee7b7", marginTop: 8 }}>
+            {"Backend systems, payments and developer tools"}
           </div>
         </div>
 
         <div style={{ display: "flex", fontSize: 26, color: "#a1a1aa" }}>
-          Node.js · TypeScript · Python · C++ · 500+ DSA problems solved
+          ShopSphere · Whiteboard · SWE-Sentinel · Seatline
         </div>
       </div>
     ),

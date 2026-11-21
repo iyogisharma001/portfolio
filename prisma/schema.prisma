@@ -40,6 +40,13 @@ model Project {
   metrics      Json          @default("[]")
   githubUrl    String?
   liveUrl      String?
+  /// GitHub repository name, used to pull live repo stats.
+  repo         String?
+  /// Cover screenshot path under /public, and extra screenshots for the detail view.
+  image        String?
+  gallery      String[]      @default([])
+  /// Extra links as an array of { label, href }.
+  links        Json          @default("[]")
   featured     Boolean       @default(false)
   order        Int           @default(0)
   userId       String?

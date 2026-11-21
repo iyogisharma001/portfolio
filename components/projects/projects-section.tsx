@@ -1,20 +1,27 @@
 import { Projects } from "@/components/projects/projects";
-import { Reveal } from "@/components/ui/reveal";
 import { Section } from "@/components/ui/section";
-import type { Project } from "@/lib/data";
+import { profile, type Project } from "@/lib/data";
+import type { RepoStats } from "@/lib/github";
 
-export function ProjectsSection({ projects }: { projects: Project[] }) {
+type Props = { projects: Project[]; repoStats: Record<string, RepoStats> };
+
+export function ProjectsSection({ projects, repoStats }: Props) {
   return (
     <Section
-      id="projects"
-      index="03"
-      eyebrow="Projects"
-      title="Things I've built."
-      description="Filter by area, open a card for the full breakdown, and leave an endorsement if something's useful."
+      id="work"
+      eyebrow="Selected work"
+      title="Things I've built and shipped."
+      description={
+        <>
+          Every project here has public code on{" "}
+          <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="link">
+            GitHub
+          </a>
+          , with a README that explains the design and its limits. Repository details update live.
+        </>
+      }
     >
-      <Reveal>
-        <Projects projects={projects} />
-      </Reveal>
+      <Projects projects={projects} repoStats={repoStats} />
     </Section>
   );
 }

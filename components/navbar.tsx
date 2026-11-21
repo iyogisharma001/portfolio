@@ -62,14 +62,14 @@ export function Navbar() {
       <motion.div
         aria-hidden
         style={{ scaleX: progress }}
-        className="absolute inset-x-0 top-0 h-px origin-left bg-gradient-to-r from-indigo-400 via-sky-400 to-cyan-300"
+        className="absolute inset-x-0 top-0 h-px origin-left bg-emerald-400/70"
       />
 
-      <div className="mx-auto max-w-6xl px-3 pt-3 sm:px-6">
+      <div className="mx-auto max-w-5xl px-3 pt-3 sm:px-6">
         <nav
           aria-label="Primary"
           className={cn(
-            "flex h-14 items-center justify-between rounded-2xl border px-3 pl-4 transition-all duration-300",
+            "flex h-14 items-center justify-between rounded-xl border px-3 pl-3 transition-all duration-300",
             scrolled || open
               ? "border-white/[0.08] bg-zinc-950/75 shadow-lg shadow-black/30 backdrop-blur-xl"
               : "border-transparent bg-transparent",
@@ -80,7 +80,7 @@ export function Navbar() {
             className="flex items-center gap-2.5 text-sm font-semibold text-white"
             onClick={() => setOpen(false)}
           >
-            <span className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 font-mono text-xs font-bold text-zinc-950">
+            <span className="grid size-8 place-items-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-200 ring-1 ring-white/10">
               {profile.initials}
             </span>
             <span className="hidden min-[420px]:inline">{profile.name}</span>

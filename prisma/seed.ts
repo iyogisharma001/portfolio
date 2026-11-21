@@ -22,6 +22,10 @@ async function main() {
     create: { email: profile.email, ...userData },
   });
 
+  // Remove projects and skills that are no longer in lib/data.ts.
+  await prisma.project.deleteMany({ where: { slug: { notIn: projects.map((p) => p.slug) } } });
+  await prisma.skill.deleteMany({ where: { name: { notIn: skills.map((s) => s.name) } } });
+
   for (const project of projects) {
     const data = { ...project, userId: user.id };
     await prisma.project.upsert({

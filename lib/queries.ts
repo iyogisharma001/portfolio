@@ -2,6 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import {
   projects as fallbackProjects,
   skills as fallbackSkills,
+  type Link,
   type Metric,
   type Project,
   type ProjectCategory,
@@ -10,16 +11,19 @@ import {
 } from "@/lib/data";
 import { hasDatabase, prisma } from "@/lib/prisma";
 
-function toMetrics(value: unknown): Metric[] {
+function toPairs<K extends string, V extends string>(value: unknown, k: K, v: V): Record<K | V, string>[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((item) => {
     if (typeof item !== "object" || item === null) return [];
-    const { label, value: metricValue } = item as Record<string, unknown>;
-    return typeof label === "string" && typeof metricValue === "string"
-      ? [{ label, value: metricValue }]
+    const record = item as Record<string, unknown>;
+    return typeof record[k] === "string" && typeof record[v] === "string"
+      ? [{ [k]: record[k], [v]: record[v] } as Record<K | V, string>]
       : [];
   });
 }
+
+const toMetrics = (value: unknown): Metric[] => toPairs(value, "label", "value");
+const toLinks = (value: unknown): Link[] => toPairs(value, "label", "href");
 
 /**
  * Projects from PostgreSQL, cached for an hour. Falls back to the typed static
@@ -48,6 +52,10 @@ export async function getProjects(): Promise<Project[]> {
       metrics: toMetrics(row.metrics),
       githubUrl: row.githubUrl,
       liveUrl: row.liveUrl,
+      repo: row.repo,
+      image: row.image,
+      gallery: row.gallery,
+      links: toLinks(row.links),
       featured: row.featured,
       order: row.order,
     }));

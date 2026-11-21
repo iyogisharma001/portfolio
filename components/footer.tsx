@@ -11,11 +11,11 @@ const socials = [
 export function Footer() {
   return (
     <footer className="border-t border-white/[0.06]">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
+      <div className="mx-auto flex max-w-5xl flex-col gap-8 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-sm font-medium text-white">{profile.name}</p>
           <p className="mt-1 text-sm text-zinc-500">
-            Built with Next.js, TypeScript, Tailwind CSS, Prisma and PostgreSQL.
+            Built with Next.js, Prisma and PostgreSQL. Project details sync from GitHub.
           </p>
         </div>
 

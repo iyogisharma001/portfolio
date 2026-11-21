@@ -1,93 +1,151 @@
-import { ArrowRight, Download, Mail, MapPin } from "lucide-react";
-import { TerminalCard } from "@/components/hero/terminal-card";
-import { Typewriter } from "@/components/hero/typewriter";
+import { ArrowUpRight, Download, Mail, MapPin } from "lucide-react";
+import Image from "next/image";
+import type { ReactNode } from "react";
 import { ButtonLink } from "@/components/ui/button";
-import { GitHubIcon, LinkedInIcon } from "@/components/ui/icons";
+import { GitHubIcon, LeetCodeIcon, LinkedInIcon } from "@/components/ui/icons";
 import { Reveal } from "@/components/ui/reveal";
-import { profile } from "@/lib/data";
+import { LocalTime, TimeAgo } from "@/components/ui/time";
+import { experience, profile } from "@/lib/data";
+import type { LiveStats } from "@/lib/github";
 
-function AvailabilityBadge() {
-  if (!profile.available) return null;
-  return (
-    <p className="glass inline-flex max-w-full items-center gap-2.5 rounded-full py-1.5 pr-4 pl-3 text-xs text-zinc-300 sm:text-sm">
-      <span className="relative flex size-2 shrink-0">
-        <span className="absolute inline-flex size-full animate-pulse-ring rounded-full bg-emerald-400" />
-        <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
-      </span>
-      {profile.availability}
-    </p>
+function Avatar() {
+  return profile.photo ? (
+    <Image
+      src={profile.photo}
+      alt={profile.name}
+      width={64}
+      height={64}
+      priority
+      className="size-16 rounded-full object-cover ring-1 ring-white/10"
+    />
+  ) : (
+    <span className="grid size-16 place-items-center rounded-full bg-zinc-800 text-lg font-semibold text-zinc-200 ring-1 ring-white/10">
+      {profile.initials}
+    </span>
   );
 }
 
-export function Hero() {
+function NowRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <section id="top" className="relative isolate overflow-hidden">
-      {/* Ambient background: dot grid plus two slow-drifting colour washes. */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
-        <div className="bg-grid absolute inset-0" />
-        <div className="absolute -top-40 left-1/2 h-[32rem] w-[52rem] -translate-x-[70%] animate-drift rounded-full bg-indigo-600/20 blur-[120px]" />
-        <div className="absolute top-10 left-1/2 h-[26rem] w-[40rem] translate-x-[5%] animate-drift rounded-full bg-cyan-500/[0.12] blur-[120px] [animation-delay:-9s]" />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-zinc-950" />
+    <div className="grid grid-cols-[6.5rem_1fr] gap-3 px-4 py-3 text-sm sm:px-5">
+      <dt className="text-zinc-500">{label}</dt>
+      <dd className="min-w-0 text-zinc-200">{children}</dd>
+    </div>
+  );
+}
+
+/** A small "right now" card built from live GitHub and LeetCode data. */
+function NowCard({ stats }: { stats: LiveStats }) {
+  const latestJob = experience[0];
+  return (
+    <div className="surface overflow-hidden">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3 sm:px-5">
+        <p className="text-sm font-medium text-zinc-100">Right now</p>
+        {stats.fetchedAt ? (
+          <p className="flex items-center gap-1.5 text-xs text-zinc-500">
+            <span className="size-1.5 rounded-full bg-emerald-400" />
+            Live from GitHub
+          </p>
+        ) : null}
       </div>
+      <dl className="divide-y divide-white/[0.06]">
+        {stats.latest ? (
+          <NowRow label="Last push">
+            <a href={stats.latest.url} target="_blank" rel="noopener noreferrer" className="link">
+              {stats.latest.name}
+            </a>{" "}
+            <span className="text-zinc-500">
+              · <TimeAgo iso={stats.latest.pushedAt} />
+            </span>
+          </NowRow>
+        ) : null}
+        <NowRow label="LeetCode">
+          <a href={profile.leetcodeUrl} target="_blank" rel="noopener noreferrer" className="link">
+            {stats.leetcodeSolved !== null ? `${stats.leetcodeSolved} solved` : profile.leetcodeHandle}
+          </a>{" "}
+          <span className="text-zinc-500">· 500+ incl. GfG</span>
+        </NowRow>
+        <NowRow label="Studying">B.Tech ECE, BIT Mesra &apos;28</NowRow>
+        {latestJob ? (
+          <NowRow label="Previously">
+            {latestJob.title}, {latestJob.organization}
+          </NowRow>
+        ) : null}
+      </dl>
+    </div>
+  );
+}
 
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-32 pb-20 sm:px-8 sm:pt-40 lg:grid-cols-[1.1fr_0.9fr] lg:gap-10 lg:pb-28">
+export function Hero({ stats }: { stats: LiveStats }) {
+  return (
+    <section id="top" className="mx-auto max-w-5xl px-5 pt-28 pb-12 sm:px-8 sm:pt-36 sm:pb-16">
+      <div className="grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:items-end lg:gap-14">
         <div className="min-w-0">
-          <Reveal>
-            <AvailabilityBadge />
+          <Reveal y={12}>
+            <div className="flex items-center gap-4">
+              <Avatar />
+              {profile.available ? (
+                <p className="inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-3 py-1 text-xs text-emerald-300 sm:text-sm">
+                  <span className="relative flex size-2 shrink-0">
+                    <span className="absolute inline-flex size-full animate-pulse-ring rounded-full bg-emerald-400" />
+                    <span className="relative inline-flex size-2 rounded-full bg-emerald-400" />
+                  </span>
+                  {profile.availability}
+                </p>
+              ) : null}
+            </div>
           </Reveal>
 
-          <Reveal delay={0.08}>
-            <h1 className="mt-7 text-[2.6rem] leading-[1.05] font-semibold tracking-tight text-white sm:text-6xl lg:text-[4.2rem]">
-              Hi, I&apos;m {profile.firstName}.
-              <span className="mt-2 block min-h-[2.2em] text-[0.62em] leading-tight font-medium text-zinc-400 sm:min-h-[1.2em]">
-                I build <Typewriter phrases={profile.roles} />
-              </span>
+          <Reveal delay={0.05} y={12}>
+            <h1 className="mt-8 text-4xl font-semibold tracking-tight text-zinc-50 sm:text-5xl">
+              {profile.name}
             </h1>
-          </Reveal>
-
-          <Reveal delay={0.16}>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-zinc-400 sm:text-lg">
-              {profile.tagline}
+            <p className="mt-3 text-lg text-zinc-300 sm:text-xl">
+              Software engineer building backend systems, payments and developer tools.
             </p>
           </Reveal>
 
-          <Reveal delay={0.24} className="mt-9 flex flex-wrap gap-3">
-            <ButtonLink href="#projects">
-              Explore Projects <ArrowRight className="size-4" />
+          <Reveal delay={0.1} y={12}>
+            <p className="mt-5 max-w-xl leading-relaxed text-zinc-400">{profile.intro}</p>
+          </Reveal>
+
+          <Reveal delay={0.15} y={12} className="mt-8 flex flex-wrap items-center gap-2.5">
+            <ButtonLink href={profile.resumeUrl} download>
+              <Download className="size-4" /> Resume
             </ButtonLink>
             <ButtonLink href="#contact" variant="secondary">
-              <Mail className="size-4" /> Get in Touch
+              <Mail className="size-4" /> Get in touch
             </ButtonLink>
-            <ButtonLink href={profile.resumeUrl} variant="ghost" download>
-              <Download className="size-4" /> Resume
+            <ButtonLink href="#work" variant="ghost">
+              See my work <ArrowUpRight className="size-4" />
             </ButtonLink>
           </Reveal>
 
-          <Reveal delay={0.32} className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-zinc-500">
+          <Reveal delay={0.2} y={12} className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
             <span className="inline-flex items-center gap-1.5">
-              <MapPin className="size-4" /> {profile.location}
+              <MapPin className="size-4" /> {profile.location} ·{" "}
+              <LocalTime timeZone={profile.timezone} label="IST" />
             </span>
-            <a
-              href={profile.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
-            >
-              <GitHubIcon className="size-4" /> GitHub
-            </a>
-            <a
-              href={profile.linkedinUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
-            >
-              <LinkedInIcon className="size-4" /> LinkedIn
-            </a>
+            {[
+              { label: "GitHub", href: profile.githubUrl, icon: GitHubIcon },
+              { label: "LinkedIn", href: profile.linkedinUrl, icon: LinkedInIcon },
+              { label: "LeetCode", href: profile.leetcodeUrl, icon: LeetCodeIcon },
+            ].map(({ label, href, icon: Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-zinc-100"
+              >
+                <Icon className="size-4" /> {label}
+              </a>
+            ))}
           </Reveal>
         </div>
 
-        <Reveal delay={0.2} y={36} className="min-w-0">
-          <TerminalCard />
+        <Reveal delay={0.2} y={16} className="min-w-0">
+          <NowCard stats={stats} />
         </Reveal>
       </div>
     </section>

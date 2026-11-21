@@ -4,46 +4,27 @@ import { cn } from "@/lib/utils";
 
 type SectionProps = {
   id: string;
-  /** Two-digit index shown in the eyebrow, e.g. "01". */
-  index: string;
   eyebrow: string;
   title: string;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
   className?: string;
 };
 
-/** A page section with a consistent numbered heading block. */
-export function Section({
-  id,
-  index,
-  eyebrow,
-  title,
-  description,
-  children,
-  className,
-}: SectionProps) {
+/** A page section with a consistent heading block. */
+export function Section({ id, eyebrow, title, description, children, className }: SectionProps) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-heading`}
-      className={cn("mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-28", className)}
+      className={cn("mx-auto w-full max-w-5xl px-5 py-16 sm:px-8 sm:py-24", className)}
     >
-      <Reveal className="mb-12 max-w-2xl sm:mb-16">
-        <p className="mb-4 flex items-center gap-3 font-mono text-xs tracking-widest text-cyan-300/90 uppercase">
-          <span className="text-zinc-600">{index}</span>
-          <span aria-hidden className="h-px w-8 bg-gradient-to-r from-cyan-400/70 to-transparent" />
-          {eyebrow}
-        </p>
-        <h2
-          id={`${id}-heading`}
-          className="text-3xl font-semibold tracking-tight text-white sm:text-4xl"
-        >
+      <Reveal className="mb-10 max-w-2xl sm:mb-12">
+        <p className="mb-3 font-mono text-xs tracking-wider text-emerald-400/90 uppercase">{eyebrow}</p>
+        <h2 id={`${id}-heading`} className="text-2xl font-semibold tracking-tight text-zinc-100 sm:text-3xl">
           {title}
         </h2>
-        {description ? (
-          <p className="mt-4 text-base leading-relaxed text-zinc-400 sm:text-lg">{description}</p>
-        ) : null}
+        {description ? <p className="mt-3 text-base leading-relaxed text-zinc-400">{description}</p> : null}
       </Reveal>
       {children}
     </section>

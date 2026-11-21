@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 const title = `${profile.name} — ${profile.headline}`;
 const description =
-  "Portfolio of Yogesh Sharma, a pre-final year undergraduate at BIT Mesra building backend APIs in Node.js and TypeScript and ML systems from first principles.";
+  "Yogesh Sharma is a software engineer and B.Tech ECE student at BIT Mesra building backend systems, payments and developer tools: ShopSphere, Whiteboard, SWE-Sentinel and Seatline.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -27,6 +27,8 @@ export const metadata: Metadata = {
     "TypeScript",
     "Backend Developer",
     "Portfolio",
+    "ShopSphere",
+    "SWE-Sentinel",
   ],
   authors: [{ name: profile.name, url: profile.githubUrl }],
   creator: profile.name,
